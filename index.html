@@ -14,6 +14,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="author" content="Pedro H. D. Santos, LSU Alexandria">
 <style>[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<script defer src="https://cloud.umami.is/script.js" data-website-id="cd5c3769-ec22-422f-917a-545d3944d830" data-domains="phdiassantos.github.io"></script>
 <title>Hypha Run</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -809,6 +810,18 @@ const endDrag=()=>{drag=null;if(mode==='launch')launchUp()};cv.addEventListener(
 document.getElementById('muteBtn').textContent=muted?'Sound off':'Sound on';
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='play')pause()});
 resize();menu();requestAnimationFrame(frame);
+
+/* ---- anonymous play metrics (Umami; no-op when the script is absent) ---- */
+(function(){const T=(n,d)=>{try{window.umami&&window.umami.track(n,d)}catch(e){}};
+ const dn=()=>['easy','medium','hard'][diff]||'medium',md=()=>arcade?'arcade':endless?'endless':'campaign',sid=()=>(G&&G.S&&G.S.id)||'arcade',um=()=>G?Math.round(G.sLen*.5):0,sec=()=>G?Math.round(G.t):0;
+ const w=(f,before,after)=>function(...a){before&&before.apply(this,a);const r=f.apply(this,a);after&&after.apply(this,a);return r};
+ start=w(start,null,()=>T('run_start',{stage:sid(),mode:md(),difficulty:dn()}));
+ gameOver=w(gameOver,why=>T('run_game_over',{stage:sid(),mode:md(),difficulty:dn(),um:um(),seconds:sec(),cause:String(why||'').replace(/<[^>]*>/g,'').slice(0,60)}));
+ showClear=w(showClear,null,()=>{const st=G.launchStars||(G.carbon>=60?3:G.carbon>=30?2:1);T('run_stage_clear',{stage:sid(),difficulty:dn(),um:um(),seconds:sec(),stars:st,quiz:G.quiz?G.quiz.score:null})});
+ quizAnswer=w(quizAnswer,k=>{if(!G.quiz||G.quiz.done)return;const q=QUIZ[STAGES[stageIdx].id][G.quiz.i];T('run_quiz',{stage:sid(),question:G.quiz.i+1,correct:k===q.a})});
+ let act=0,last=Date.now();setInterval(()=>{if(document.visibilityState==='visible'&&(mode==='play'||mode==='scene'||mode==='launch'))act+=1},1000);
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'&&act>=5){T('run_time',{seconds:act});act=0}});
+})();
 </script>
 
 </body>
